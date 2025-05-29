@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "789246904191",
+    "project_id": "studyspace-4c521",
+    "storage_bucket": "studyspace-4c521.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:789246904191:android:52a203ee6ae02659c3fc4a",
+        "android_client_info": {
+          "package_name": "com.fabian.StudySpace"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "789246904191-v28rmmrg3apo1ficoabs1vdcsfa03j9m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fabian.StudySpace",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "789246904191-e5i4hg6d4h0244f1qdgpam3st6bfg9rg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzZKFLpM6Mcg3992swK734XQfUJSRhFdg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "789246904191-e5i4hg6d4h0244f1qdgpam3st6bfg9rg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
