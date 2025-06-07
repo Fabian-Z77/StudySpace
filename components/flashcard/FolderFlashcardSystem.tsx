@@ -19,6 +19,130 @@ import { auth } from '../../firebase';
 import { shuffleArray } from './util';
 import SpaceRepetition from '@/app/SpaceRepetition';
 
+
+
+
+
+
+
+const parsePlantUMLToFlashcards = (plantUMLText) => {
+  const flashcards = [];
+  const lines = plantUMLText.split('\n').map(line => line.trim());
+  
+  let currentQuestion = '';
+  let currentAnswer = '';
+  let insideNote = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // NUEVO: Detectar formato card "pregunta" as cardX
+    if (line.startsWith('card "') && line.includes('" as ')) {
+      const questionMatch = line.match(/card\s+"([^"]+)"\s+as\s+(\w+)/);
+      if (questionMatch) {
+        currentQuestion = questionMatch[1];
+        const cardId = questionMatch[2];
+        
+        // Buscar la respuesta en las siguientes líneas
+        for (let j = i + 1; j < lines.length; j++) {
+          const nextLine = lines[j];
+          if (nextLine.includes(`${cardId} -> "`)) {
+            const answerMatch = nextLine.match(/-> "([^"]+)"/);
+            if (answerMatch) {
+              currentAnswer = answerMatch[1];
+              flashcards.push({
+                name: currentQuestion.substring(0, 50) + (currentQuestion.length > 50 ? '...' : ''),
+                question: currentQuestion,
+                answer: currentAnswer
+              });
+              break;
+            }
+          }
+        }
+        currentQuestion = '';
+        currentAnswer = '';
+        continue;
+      }
+    }
+    
+    // Detectar inicio de nota (pregunta)
+    if (line.startsWith('note') && line.includes(':')) {
+      insideNote = true;
+      currentQuestion = line.split(':')[1].trim();
+      continue;
+    }
+    
+    // Detectar fin de nota
+    if (line === 'end note' && insideNote) {
+      insideNote = false;
+      if (currentQuestion && currentAnswer) {
+        flashcards.push({
+          name: currentQuestion.substring(0, 50) + (currentQuestion.length > 50 ? '...' : ''),
+          question: currentQuestion,
+          answer: currentAnswer
+        });
+        currentQuestion = '';
+        currentAnswer = '';
+      }
+      continue;
+    }
+    
+    // Si estamos dentro de una nota, acumular respuesta
+    if (insideNote && line && !line.startsWith('note')) {
+      currentAnswer += (currentAnswer ? '\n' : '') + line;
+    }
+    
+    // Detectar clases/entidades como flashcards
+    if (line.startsWith('class ') || line.startsWith('entity ')) {
+      const entityName = line.split(' ')[1];
+      if (entityName) {
+        // Buscar métodos o atributos en las siguientes líneas
+        let content = '';
+        let j = i + 1;
+        while (j < lines.length && !lines[j].startsWith('}') && lines[j] !== '') {
+          if (lines[j].startsWith('+') || lines[j].startsWith('-') || lines[j].startsWith('#')) {
+            content += lines[j] + '\n';
+          }
+          j++;
+        }
+        
+        if (content) {
+          flashcards.push({
+            name: `${entityName} - Definición`,
+            question: `¿Qué es ${entityName}?`,
+            answer: content.trim()
+          });
+        }
+      }
+    }
+    
+    // Detectar relaciones como flashcards
+    if (line.includes('-->') || line.includes('..>') || line.includes('||--')) {
+      const parts = line.split(/-->|\.\.>|\|\|--/);
+      if (parts.length === 2) {
+        const from = parts[0].trim();
+        const to = parts[1].trim();
+        flashcards.push({
+          name: `Relación: ${from} → ${to}`,
+          question: `¿Cómo se relaciona ${from} con ${to}?`,
+          answer: `${from} está conectado/relacionado con ${to}`
+        });
+      }
+    }
+  }
+  
+  return flashcards;
+};
+
+
+
+
+
+
+
+
+
+
 // Consistent color palette from SpaceRepetition
 const COLORS = {
   background: '#F5F7FA',
@@ -54,6 +178,9 @@ const FolderFlashcardSystem = ({ userId, onFlashcardPress }) => {
   const [newitemAnswer, setNewitemAnswer] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  // 2. NUEVO ESTADO - Agregar junto a los otros useState
+const [bulkModalVisible, setBulkModalVisible] = useState(false);
+const [plantUMLText, setPlantUMLText] = useState('');
 
   // Cargar datos desde Firestore cuando cambia el usuario o la ruta
   useEffect(() => {
@@ -180,6 +307,109 @@ const FolderFlashcardSystem = ({ userId, onFlashcardPress }) => {
       Alert.alert("Error", "No se pudo crear el elemento.");
     }
   };
+
+
+
+
+
+
+  const showAlert = (title, message) => {
+  if (Platform?.OS === 'web' || typeof window !== 'undefined') {
+    window.alert(`${title}\n\n${message}`);
+  } else {
+    Alert.alert(title, message);
+  }
+};
+
+const confirmDialog = (title, message) => {
+  if (Platform?.OS === 'web' || typeof window !== 'undefined') {
+    return Promise.resolve(window.confirm(`${title}\n\n${message}`));
+  } else {
+    return new Promise(resolve => {
+      Alert.alert(
+        title,
+        message,
+        [
+          { text: "Cancelar", onPress: () => resolve(false), style: "cancel" },
+          { text: "Crear", onPress: () => resolve(true) }
+        ]
+      );
+    });
+  }
+};
+
+
+
+
+
+
+const createBulkFlashcards = async () => {
+  if (plantUMLText.trim() === '') {
+    showAlert("Error", "Por favor ingresa contenido PlantUML.");
+    return;
+  }
+
+  try {
+    const parsedFlashcards = parsePlantUMLToFlashcards(plantUMLText);
+
+    if (parsedFlashcards.length === 0) {
+      showAlert("Error", "No se pudieron generar flashcards del contenido proporcionado.");
+      return;
+    }
+
+    const confirm = await confirmDialog(
+      "Confirmar creación",
+      `Se generarán ${parsedFlashcards.length} flashcards. ¿Continuar?`
+    );
+
+    if (!confirm) return;
+
+    const parentId = currentPath.length > 0 ? currentPath[currentPath.length - 1].id : null;
+    let position = items.length + 1;
+
+    const newFlashcards = [];
+
+    for (const flashcard of parsedFlashcards) {
+      try {
+        const newId = await createFlashcard(
+          currentUser.uid,
+          flashcard.name,
+          flashcard.question,
+          flashcard.answer,
+          parentId,
+          position
+        );
+
+        newFlashcards.push({
+          id: newId,
+          name: flashcard.name,
+          type: 'flashcard',
+          question: flashcard.question,
+          answer: flashcard.answer,
+          parentId,
+          position,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+
+        position++;
+      } catch (error) {
+        console.error(`Error creating flashcard: ${flashcard.name}`, error);
+      }
+    }
+
+    // Actualizar UI
+    setItems(prev => [...prev, ...newFlashcards]);
+    setBulkModalVisible(false);
+    setPlantUMLText('');
+
+    showAlert("Éxito", `Se crearon ${newFlashcards.length} flashcards correctamente.`);
+
+  } catch (error) {
+    console.error("Error al procesar PlantUML:", error);
+    showAlert("Error", "Hubo un problema al procesar el contenido PlantUML.");
+  }
+};
   
 
 
@@ -546,20 +776,26 @@ const deleteItem = async (item, userId) => {
           />
           
           {/* Botones de acción flotantes */}
-          <View style={styles.fabContainer}>
-            <TouchableOpacity 
-              style={[styles.fabButton1, { backgroundColor: COLORS.primary }]} 
-              onPress={() => openCreateModal('flashcard')}
-            >
-              <Feather name="file-plus" size={24} color="white" />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.fabButton2, { backgroundColor: COLORS.folder }]} 
-              onPress={() => openCreateModal('folder')}
-            >
-              <Feather name="folder-plus" size={24} color="white" />
-            </TouchableOpacity>
-          </View>
+        <View style={styles.fabContainer}>
+          <TouchableOpacity 
+            style={[styles.fabButton3, { backgroundColor: '#FF6B6B' }]} 
+            onPress={() => setBulkModalVisible(true)}
+          >
+            <Feather name="layers" size={24} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.fabButton1, { backgroundColor: COLORS.primary }]} 
+            onPress={() => openCreateModal('flashcard')}
+          >
+            <Feather name="file-plus" size={24} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.fabButton2, { backgroundColor: COLORS.folder }]} 
+            onPress={() => openCreateModal('folder')}
+          >
+            <Feather name="folder-plus" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
           
           {/* Modal para crear nuevo elemento */}
           <Modal
@@ -801,6 +1037,65 @@ const deleteItem = async (item, userId) => {
                     onPress={() => handleRenameFlashcard(currentItem.id, newItemName, newitemQuestion, newitemAnswer)}
                   >
                     <Text style={styles.buttonText}>Guardar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+
+
+
+
+
+
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={bulkModalVisible}
+            onRequestClose={() => setBulkModalVisible(false)}
+          >
+            <View style={styles.modalContainer}>
+              <View style={[styles.modalContent, { maxHeight: '80%' }]}>
+                <Text style={styles.modalTitle}>Generar Flashcards desde PlantUML</Text>
+                <Text style={styles.modalSubtitle}>
+                  Pega tu código PlantUML aquí. Se generarán flashcards automáticamente.
+                </Text>
+                <TextInput
+                  style={[styles.input, styles.bulkTextInput]}
+                  placeholder={`Ejemplo:
+          @startuml
+          class Usuario {
+            +String nombre
+            +String email
+            +login()
+            +logout()
+          }
+
+          note right: ¿Qué métodos tiene Usuario?
+          login() y logout() son los métodos principales
+          end note
+
+          Usuario --> Perfil
+          @enduml`}
+                  value={plantUMLText}
+                  onChangeText={setPlantUMLText}
+                  multiline={true}
+                  numberOfLines={15}
+                  autoFocus
+                  placeholderTextColor={COLORS.textSecondary}
+                />
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.cancelButton]} 
+                    onPress={() => setBulkModalVisible(false)}
+                  >
+                    <Text style={styles.buttonTextCancel}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.confirmButton]} 
+                    onPress={createBulkFlashcards}
+                  >
+                    <Text style={styles.buttonText}>Generar Flashcards</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1153,6 +1448,41 @@ fabButton2:{
           textAlign: 'center',
           lineHeight: 16,
         },
+
+
+
+
+
+
+
+
+
+
+
+    modalSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 15,
+    lineHeight: 20,
+  },
+  bulkTextInput: {
+    height: 250,
+    textAlignVertical: 'top',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 12,
+  },
+  fabButton3: {
+    position: 'absolute',
+    right: 20,
+    bottom: 170,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  },
 });
 
 
