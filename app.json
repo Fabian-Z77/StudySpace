@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "studyspace",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true
     },
@@ -18,12 +18,20 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.fabian.StudySpace",
-        "jsEngine": "jsc"
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "build": {
+        "babel": {
+          "include": ["@expo/vector-icons"]
+        }
+      }
     },
     "plugins": [
       "expo-router",

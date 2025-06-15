@@ -1,32 +1,30 @@
+import { DiaEnLetra } from '@/components/funciones/calculo_dia_en_letra';
 import { addTask } from '@/components/funcionesTask/Addtask';
+import { auth } from '@/firebase';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Modal
+    Alert,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
-import { DiaEnLetra } from '../components/funciones/calculo_dia_en_letra';
-import { auth } from '../firebase';
 
-// Importar las funciones de notificación (añadir al inicio del archivo)
-import { 
-  programarNotificacionesRepeticionEspaciada,
-  requestNotificationPermissions,
-  createNotificationChannel,
-  configurarCategoriasIOS,
-  mostrarNotificacionesProgramadasDetalle,
-  enviarNotificacionInmediata
-} from '../components/funcionesTask/scheduleRepetitionNotifications';
+// Importar las funciones de notificación
+import {
+    createNotificationChannel,
+    enviarNotificacionInmediata,
+    programarNotificacionesRepeticionEspaciada,
+    requestNotificationPermissions
+} from '@/components/funcionesTask/scheduleRepetitionNotifications';
 
 
 // Calcular días faltantes para el próximo repaso
@@ -64,7 +62,7 @@ const SPACED_REPETITION_PLANS = {
   standard: { name: 'Estándar (7 repasos)', description: 'Plan recomendado para la mayoría de los casos', intervals: [1, 6, 14, 30, 66, 150, 360] },
   sm2: { name: 'Anki/SuperMemo (SM-2)', description: 'Basado en el algoritmo SM-2 con factor de facilidad', intervals: [1, 6] },
   wozniak: { name: 'Wozniak (1985)', description: 'Plan original de SuperMemo para vocabulario', intervals: [0.007, 1, 7, 30, 180] },
-  leitner5: { name: 'Leitner (5 cajas)', description: 'Sistema de 5 niveles con intervalos crecientes', intervals: [1, 2, 4, 8, 16] },
+  leitner5: { name: 'Leitner (5 cajas)', description: 'Sistema de 5 niveles con intervalos crecientes', intervals: [1, 2, 4, 7, 14] },
   leitner3: { name: 'Leitner Simplificado (3 cajas)', description: 'Sistema simplificado de 3 niveles', intervals: [1, 3, 7] },
   custom137: { name: 'Esquema 1-3-7-14...', description: 'Plan popular con intervalos iniciales cortos', intervals: [1, 3, 7, 14, 30, 60, 120] },
   none: { name: 'Sin repetición', description: 'Solo una fecha sin repeticiones programadas', intervals: [] },

@@ -1,21 +1,41 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Animated, 
-  TouchableOpacity, 
-  Dimensions,
-  ScrollView,
-  Modal,
-  SafeAreaView,
-  Pressable
-} from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  Dimensions,
+  Modal,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
-const FlashcardViewer = ({ 
+interface Flashcard {
+  id: string;
+  name: string;
+  question: string;
+  answer: string;
+  reviewed?: boolean;
+}
+
+interface FlashcardViewerProps {
+  flashcard: Flashcard;
+  isVisible: boolean;
+  onClose: () => void;
+  onEdit: (flashcard: Flashcard) => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  hasNext?: boolean;
+  hasPrevious?: boolean;
+  onMarkReviewed?: (flashcard: Flashcard) => void;
+}
+
+const FlashcardViewer: React.FC<FlashcardViewerProps> = ({ 
   flashcard, 
   isVisible, 
   onClose, 
@@ -28,49 +48,46 @@ const FlashcardViewer = ({
 }) => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [isReviewed, setIsReviewed] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
   
-  
-  // Reset states when flashcard changes
+  // Reset states when flashcard changes or modal closes
   useEffect(() => {
     setShowAnswer(false);
     setIsReviewed(false);
-  }, [flashcard]);
+    setIsFlipped(false);
+    flipAnimation.setValue(0);
+  }, [flashcard, isVisible, flipAnimation]);
 
   // Flip card animation
   const flipCard = () => {
-    if (showAnswer) {
-      Animated.timing(flipAnimation, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => setShowAnswer(false));
-    } else {
-      Animated.timing(flipAnimation, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => setShowAnswer(true));
-    }
+    Animated.spring(flipAnimation, {
+      toValue: isFlipped ? 0 : 1,
+      friction: 8,
+      tension: 10,
+      useNativeDriver: true,
+    }).start();
+    setIsFlipped(!isFlipped);
+    setShowAnswer(!showAnswer);
   };
 
   // Calculate the rotation based on flipAnimation
-  const frontInterpolate = flipAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
-
-  const backInterpolate = flipAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['180deg', '360deg'],
-  });
-
   const frontAnimatedStyle = {
-    transform: [{ rotateY: frontInterpolate }],
+    transform: [{
+      rotateY: flipAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '180deg']
+      })
+    }]
   };
 
   const backAnimatedStyle = {
-    transform: [{ rotateY: backInterpolate }],
+    transform: [{
+      rotateY: flipAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['180deg', '360deg']
+      })
+    }]
   };
 
   // Mark the flashcard as reviewed
@@ -106,31 +123,18 @@ const FlashcardViewer = ({
           </TouchableOpacity>
         </View>
 
-        {/* Navigation indicators */}
-        <View style={styles.navigationIndicator}>
-          {hasPrevious && (
-            <TouchableOpacity onPress={onPrevious} style={styles.navButton}>
-              <Feather name="chevron-left" size={28} color="#333" />
-            </TouchableOpacity>
-          )}
-          <View style={{ flex: 1 }} />
-          {hasNext && (
-            <TouchableOpacity onPress={onNext} style={styles.navButton}>
-              <Feather name="chevron-right" size={28} color="#333" />
-            </TouchableOpacity>
-          )}
-        </View>
-
         {/* Flashcard content */}
         <View style={styles.cardContainer}>
-          <Pressable style={styles.cardWrapper} onPress={flipCard}>
+          <Pressable 
+            style={styles.cardWrapper} 
+            onPress={flipCard}
+          >
             {/* Front of card (Question) */}
             <Animated.View 
               style={[
                 styles.card, 
                 styles.cardFront, 
-                frontAnimatedStyle, 
-                { opacity: flipAnimation.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 0, 0] }) }
+                frontAnimatedStyle
               ]}
             >
               <Text style={styles.cardLabel}>PREGUNTA</Text>
@@ -152,8 +156,7 @@ const FlashcardViewer = ({
               style={[
                 styles.card, 
                 styles.cardBack, 
-                backAnimatedStyle,
-                { opacity: flipAnimation.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 0, 1] }) }
+                backAnimatedStyle
               ]}
             >
               <Text style={styles.cardLabel}>RESPUESTA</Text>
@@ -171,6 +174,7 @@ const FlashcardViewer = ({
             </Animated.View>
           </Pressable>
         </View>
+
 
 
       </SafeAreaView>
@@ -205,15 +209,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     color: '#333',
   },
-  navigationIndicator: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-  },
-  navButton: {
-    padding: 8,
-  },
   cardContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -224,7 +219,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     maxHeight: height * 0.6,
-    perspective: 1000,
+    perspective: '1000px',
   },
   card: {
     width: '100%',
@@ -289,7 +284,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 8,
   },
-
+  navigationButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    marginBottom: 16,
+    paddingHorizontal: 20,
+  },
+  navButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#E6F0FF',
+    minWidth: 120,
+    justifyContent: 'center',
+  },
+  navButtonDisabled: {
+    backgroundColor: '#E2E8F0',
+    opacity: 0.7,
+  },
+  navButtonText: {
+    color: '#4C6FFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginHorizontal: 8,
+  },
+  navButtonTextDisabled: {
+    color: '#666',
+  },
 });
 
 export default FlashcardViewer;

@@ -1,40 +1,36 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Dimensions,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StatusBar,
-  Alert,
-  Modal,
-  TextInput,
-  ScrollView,
   ActivityIndicator,
-  SafeAreaView
+  Alert,
+  Dimensions,
+  FlatList,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 // Firebase imports
-import { 
-  getFirestore, 
-  collection, 
-  doc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  getDocs, 
-  query, 
-  orderBy, 
-  onSnapshot,
-  serverTimestamp,
-  where
-} from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc
+} from 'firebase/firestore';
 
-import { db } from '@/firebase';
-import { app } from '@/firebase';
+import { app, db } from '@/firebase';
 
 const auth = getAuth(app);
 

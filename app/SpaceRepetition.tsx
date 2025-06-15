@@ -1,32 +1,30 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import {
-  Dimensions,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StatusBar,
-  ActivityIndicator,
-  RefreshControl,
-  Alert,
-  Platform
-} from 'react-native';
 import Card from '@/components/card';
-import { DiferenciaEnDias } from '../components/funciones/calculo_fecha';
-import { DiaEnLetra } from '../components/funciones/calculo_dia_en_letra';
+import { DiaEnLetra } from '@/components/funciones/calculo_dia_en_letra';
+import { DiferenciaEnDias } from '@/components/funciones/calculo_fecha';
+import { deleteOldTasks } from '@/components/funcionesTask/deleteOldTasks-';
+import { DiferenciaEnMinutos } from '@/components/funcionesTask/DiferenciaEnMinutos';
+import { getTasks } from '@/components/funcionesTask/GetTask';
+import { auth } from '@/firebase';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { getTasks } from '@/components/funcionesTask/GetTask';
-import { auth, signOut } from '../firebase';
-import { deleteOldTasks } from '@/components/funcionesTask/deleteOldTasks-';
-import notifee, { AndroidImportance } from '@notifee/react-native';
-import { DiferenciaEnMinutos } from '@/components/funcionesTask/DiferenciaEnMinutos';
+import { signOut } from 'firebase/auth';
 import 'intl';
 import 'intl/locale-data/jsonp/en'; // o 'es' para español
+import {
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Platform,
+    RefreshControl,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Link, useLocation } from 'react-router-dom';
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -48,54 +46,57 @@ const COLORS = {
 
 
 // Navegación Web Component mejorada
-export const WebNavigation = ({ navigation }) => (
-  <View style={styles.webNavContainer}>
-    {/* Space Repetition */}
-    <TouchableOpacity
-      style={styles.webNavButton}
-      onPress={() => navigation.navigate('Space')}
-    >
-      <View style={styles.webNavButtonContent}>
-        <View style={styles.webNavIconContainer}>
-          <Ionicons name='home' size={20} color={COLORS.primary} />
+export const WebNavigation = ({ navigation }) => {
+  if (Platform.OS === 'web') return null;
+  return (
+    <View style={styles.webNavContainer}>
+      {/* Space Repetition */}
+      <TouchableOpacity
+        style={styles.webNavButton}
+        onPress={() => navigation.navigate('Space')}
+      >
+        <View style={styles.webNavButtonContent}>
+          <View style={styles.webNavIconContainer}>
+            <Ionicons name='home' size={20} color={COLORS.primary} />
+          </View>
+          <Text style={styles.webNavButtonText}>
+            Space Repetition
+          </Text>
         </View>
-        <Text style={styles.webNavButtonText}>
-          Space Repetition
-        </Text>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
 
-    {/* Flashcard App */}
-    <TouchableOpacity
-      style={styles.webNavButton}
-      onPress={() => navigation.navigate('flashcardApp')}
-    >
-      <View style={styles.webNavButtonContent}>
-        <View style={styles.webNavIconContainer}>
-          <Ionicons name='book' size={20} color={COLORS.primary} />
+      {/* Flashcard App */}
+      <TouchableOpacity
+        style={styles.webNavButton}
+        onPress={() => navigation.navigate('flashcardApp')}
+      >
+        <View style={styles.webNavButtonContent}>
+          <View style={styles.webNavIconContainer}>
+            <Ionicons name='book' size={20} color={COLORS.primary} />
+          </View>
+          <Text style={styles.webNavButtonText}>
+            Flashcard App
+          </Text>
         </View>
-        <Text style={styles.webNavButtonText}>
-          Flashcard App
-        </Text>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
 
-    {/* Programming Error */}
-    <TouchableOpacity
-      style={styles.webNavButton}
-      onPress={() => navigation.navigate('ProgrammingError')}
-    >
-      <View style={styles.webNavButtonContent}>
-        <View style={styles.webNavIconContainer}>
-          <Ionicons name='code' size={20} color={COLORS.primary} />
+      {/* Programming Error */}
+      <TouchableOpacity
+        style={styles.webNavButton}
+        onPress={() => navigation.navigate('ProgrammingError')}
+      >
+        <View style={styles.webNavButtonContent}>
+          <View style={styles.webNavIconContainer}>
+            <Ionicons name='code' size={20} color={COLORS.primary} />
+          </View>
+          <Text style={styles.webNavButtonText}>
+            Programming Error
+          </Text>
         </View>
-        <Text style={styles.webNavButtonText}>
-          Programming Error
-        </Text>
-      </View>
-    </TouchableOpacity>
-  </View>
-);
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 
 
@@ -460,57 +461,6 @@ function SpaceRepetition() {
         </View>
       </View>
       <FilterButtons />
-
-        {
-          Platform.OS === 'web' ?
-            <View style={styles.webNavContainer}>
-              {/* Space Repetition */}
-              <TouchableOpacity
-                style={styles.webNavButton}
-                onPress={() => navigation.navigate('Space')}
-              >
-                <View style={styles.webNavButtonContent}>
-                  <View style={styles.webNavIconContainer}>
-                    <Ionicons name='home' size={20} color={COLORS.primary} />
-                  </View>
-                  <Text style={styles.webNavButtonText}>
-                    Space Repetition
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              {/* Flashcard App */}
-              <TouchableOpacity
-                style={styles.webNavButton}
-                onPress={() => navigation.navigate('flashcardApp')}
-              >
-                <View style={styles.webNavButtonContent}>
-                  <View style={styles.webNavIconContainer}>
-                    <Ionicons name='book' size={20} color={COLORS.primary} />
-                  </View>
-                  <Text style={styles.webNavButtonText}>
-                    Flashcard App
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              {/* Programming Error */}
-              <TouchableOpacity
-                style={styles.webNavButton}
-                onPress={() => navigation.navigate('ProgrammingError')}
-              >
-                <View style={styles.webNavButtonContent}>
-                  <View style={styles.webNavIconContainer}>
-                    <Ionicons name='code' size={20} color={COLORS.primary} />
-                  </View>
-                  <Text style={styles.webNavButtonText}>
-                    Programming Error
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          : ''
-        }
     </>
   );
 

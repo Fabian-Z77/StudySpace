@@ -1,29 +1,30 @@
 // firebase.js
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp } from 'firebase/app';
 import {
+  browserLocalPersistence,
   getAuth,
+  getReactNativePersistence,
   initializeAuth,
   setPersistence,
-  browserLocalPersistence,
-  getReactNativePersistence
-} from 'firebase/auth';                     // <-- desde firebase/auth
-import AsyncStorage from '@react-native-async-storage/async-storage';
+  signOut
+} from 'firebase/auth'; // <-- desde firebase/auth
 import { Platform } from 'react-native';
 
 import {
-  getFirestore,
-  doc,
-  collection,
-  setDoc,
   addDoc,
-  updateDoc,
+  collection,
   deleteDoc,
+  doc,
   getDoc,
   getDocs,
-  query,
-  where,
+  getFirestore,
   orderBy,
-  serverTimestamp
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where
 } from 'firebase/firestore';
 
 // Tu configuración de Firebase (reemplaza con tus propios valores)
@@ -71,19 +72,7 @@ if (Platform.OS === 'web') {
 }
 // 4) Exports
 export {
-  app,
-  db,
-  auth,
-  doc,
-  collection,
-  setDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  serverTimestamp
+  addDoc, app, auth, collection, db, deleteDoc, doc, getDoc,
+  getDocs, orderBy, query, serverTimestamp, setDoc, signOut, updateDoc, where
 };
+

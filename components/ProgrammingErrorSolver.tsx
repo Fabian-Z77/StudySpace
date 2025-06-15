@@ -1,42 +1,35 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Dimensions,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StatusBar,
-  Alert,
-  Modal,
-  TextInput,
-  ScrollView,
   ActivityIndicator,
-  Platform
+  Alert,
+  Dimensions,
+  FlatList,
+  Modal,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 // Firebase imports
-import { initializeApp } from 'firebase/app';
-import { 
-  getFirestore, 
-  collection, 
-  doc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  getDocs, 
-  query, 
-  orderBy, 
-  onSnapshot,
-  serverTimestamp,
-  where
-} from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc
+} from 'firebase/firestore';
 
-import { db} from '@/firebase';
-import { app } from '@/firebase';
-import WebNavigation from './WebNavigation';
+import { app, db } from '@/firebase';
 
 const auth = getAuth(app);
 
@@ -270,25 +263,20 @@ function ProgrammingErrorSolver({navigation}) {
     );
   }, [userId]);
 
-
-    // En ProgrammingErrorSolver
-    const navegarAErrores = useCallback((lenguaje) => {
-    navigation.navigate('ErrorsList', {
-        lenguaje: {
-        id: lenguaje.id,
-        nombre: lenguaje.nombre,
-        color: lenguaje.color,
-        icon: lenguaje.icon
-        }
-    });
-    }, [navigation]);
-
-    
   const renderLanguageCard = useCallback(({ item }) => (
     <View style={styles.cardContainer}>
       <TouchableOpacity
         style={[styles.card, { borderLeftColor: item.color }]}
-        onPress={() => navegarAErrores(item)}
+        onPress={() => {
+          navigation.navigate('ErrorsList', {
+            lenguaje: {
+              id: item.id,
+              nombre: item.nombre,
+              color: item.color,
+              icon: item.icon
+            }
+          });
+        }}
         activeOpacity={0.7}
       >
         <View style={styles.cardHeader}>
@@ -322,7 +310,7 @@ function ProgrammingErrorSolver({navigation}) {
         </View>
       </TouchableOpacity>
     </View>
-  ), [navegarAErrores, abrirModal, eliminarLenguaje]);
+  ), [navigation]);
 
   const ListEmptyComponent = useCallback(() => (
     <View style={styles.emptyContainer}>
@@ -347,7 +335,6 @@ function ProgrammingErrorSolver({navigation}) {
   const Header = useMemo(() => (
     <>
       <View style={styles.headerContainer}>
-
         <View>
           <Text style={styles.title}>ErrorSolver</Text>
           <Text style={styles.subtitle}>Buscador de soluciones</Text>
@@ -374,11 +361,6 @@ function ProgrammingErrorSolver({navigation}) {
           )}
         </View>
       </View>
-              {
-        Platform.OS === 'web' ?
-          <WebNavigation/>
-        : ''
-      }
 
       <View style={[{marginTop:30},styles.statsContainer]}>
         <View style={styles.statItem}>

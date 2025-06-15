@@ -1,26 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, Modal, TouchableOpacity, Touchable, Text, Platform } from 'react-native';
-import FolderFlashcardSystem from './FolderFlashcardSystem';
-import FlashcardViewer from './FlashcardViewer';
-import FlashcardEditModal from './FlashcardEditModal'; // Vamos a crear este componente después
-import {
-  getUserItems,
-  createFolder,
-  createFlashcard,
-  updateFolder,
-  updateFlashcard,
-  deleteFolder,
-  deleteFlashcard,
-  moveItem
-} from './getUserItems';
-import { TextInput } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '@react-navigation/elements';
-import { useAuth } from '../AuthContext';
 import { auth } from '@/firebase';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import WebNavigation from '../WebNavigation';
+import React, { useEffect, useState } from 'react';
+import { Alert, Platform, StyleSheet, View } from 'react-native';
+import { useAuth } from '../AuthContext';
+import FlashcardEditModal from './FlashcardEditModal'; // Vamos a crear este componente después
+import FlashcardViewer from './FlashcardViewer';
+import FolderFlashcardSystem from './FolderFlashcardSystem';
+import {
+    getUserItems,
+    updateFlashcard
+} from './getUserItems';
 
 
 const COLORS = {
@@ -37,7 +26,6 @@ const COLORS = {
 };
 
 const FlashcardApp = ({ userId }) => {
-  // Estado para la flashcard seleccionada y visibilidad del visor
   const navigation = useNavigation();
   const [selectedFlashcard, setSelectedFlashcard] = useState(null);
   const [isViewerVisible, setIsViewerVisible] = useState(false);
@@ -48,22 +36,18 @@ const FlashcardApp = ({ userId }) => {
   const [folderFlashcards, setFolderFlashcards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const { uid } = useAuth()
+  const { uid } = useAuth();
 
-
-  
-  
-useEffect(() => {
-  if (selectedFlashcard) {
-    const folderId = selectedFlashcard.folderId ?? null; // fallback a null si es undefined
-    loadFolderFlashcards(folderId);
-    console.log("📂 folderId seleccionado:", folderId);
-  }
-}, [selectedFlashcard]);
+  useEffect(() => {
+    if (selectedFlashcard) {
+      const folderId = selectedFlashcard.folderId ?? null;
+      loadFolderFlashcards(folderId);
+    }
+  }, [selectedFlashcard]);
   
   // Cargar todas las flashcards de una carpeta específica
   const loadFolderFlashcards = async (folderId) => {
-    const currentUser = auth.currentUser
+    const currentUser = auth.currentUser;
     const uidUser = currentUser?.uid;
     try {
       const items = await getUserItems(uidUser, folderId ?? null);
@@ -79,8 +63,7 @@ useEffect(() => {
         }
       }
       
-      // Guardar referencia a la carpeta actual
-      setCurrentFolder(folderId ?? null); // si usas esto en estado
+      setCurrentFolder(folderId ?? null);
     } catch (error) {
       console.error('Error al cargar las flashcards de la carpeta:', error);
       Alert.alert('Error', 'No se pudieron cargar las flashcards.');
@@ -99,6 +82,11 @@ useEffect(() => {
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
       setSelectedFlashcard(folderFlashcards[nextIndex]);
+      // Resetear el estado de la tarjeta
+      setIsViewerVisible(false);
+      setTimeout(() => {
+        setIsViewerVisible(true);
+      }, 100);
     }
   };
   
@@ -108,25 +96,28 @@ useEffect(() => {
       const prevIndex = currentIndex - 1;
       setCurrentIndex(prevIndex);
       setSelectedFlashcard(folderFlashcards[prevIndex]);
+      // Resetear el estado de la tarjeta
+      setIsViewerVisible(false);
+      setTimeout(() => {
+        setIsViewerVisible(true);
+      }, 100);
     }
   };
   
   // Abrir el modal de edición para una flashcard
   const handleEditFlashcard = (flashcard) => {
-    setIsViewerVisible(false); // Cerrar el visor
-    setIsEditModalVisible(true); // Abrir el modal de edición
+    setIsViewerVisible(false);
+    setIsEditModalVisible(true);
   };
   
   // Marcar una flashcard como revisada
   const handleMarkReviewed = async (flashcard) => {
     try {
-      // Actualizar la flashcard en Firestore
       await updateFlashcard(flashcard.id, {
         lastReviewed: new Date(),
         reviewCount: (flashcard.reviewCount || 0) + 1
       });
       
-      // Actualizar la flashcard localmente
       const updatedFlashcard = {
         ...flashcard,
         lastReviewed: new Date(),
@@ -134,7 +125,6 @@ useEffect(() => {
       };
       setSelectedFlashcard(updatedFlashcard);
       
-      // Actualizar la lista de flashcards
       const updatedFlashcards = folderFlashcards.map(card => 
         card.id === flashcard.id ? updatedFlashcard : card
       );
@@ -148,16 +138,13 @@ useEffect(() => {
   // Guardar los cambios de una flashcard editada
   const handleSaveFlashcard = async (updatedFlashcard) => {
     try {
-      // Actualizar en Firestore
       await updateFlashcard(updatedFlashcard.id, {
         name: updatedFlashcard.name,
         content: updatedFlashcard.content
       });
       
-      // Actualizar localmente
       setSelectedFlashcard(updatedFlashcard);
       
-      // Actualizar en la lista
       if (folderFlashcards.length > 0) {
         const updatedFlashcards = folderFlashcards.map(card => 
           card.id === updatedFlashcard.id ? updatedFlashcard : card
@@ -166,36 +153,20 @@ useEffect(() => {
       }
       
       setIsEditModalVisible(false);
-      setIsViewerVisible(true); // Volver al visor
+      setIsViewerVisible(true);
     } catch (error) {
       console.error('Error al guardar la flashcard:', error);
       Alert.alert('Error', 'No se pudo guardar la flashcard.');
     }
   };
 
-  useEffect(() => {
-    console.log("user ID: ", uid)
-  },[])
-  
-  
-  
   return (
     <View style={styles.container}>
-
-
-              {
-                Platform.OS === 'web' ?
-                  <WebNavigation/>
-                : ''
-              }
-      
-      {/* Sistema de carpetas y flashcards */}
       <FolderFlashcardSystem
         userId={userId}
         onFlashcardPress={handleFlashcardPress}
       />
       
-      {/* Visor de flashcard */}
       <FlashcardViewer
         flashcard={selectedFlashcard}
         isVisible={isViewerVisible}
@@ -208,14 +179,13 @@ useEffect(() => {
         onMarkReviewed={handleMarkReviewed}
       />
       
-      {/* Modal de edición de flashcard */}
       {selectedFlashcard && (
         <FlashcardEditModal
           flashcard={selectedFlashcard}
           isVisible={isEditModalVisible}
           onClose={() => {
             setIsEditModalVisible(false);
-            setIsViewerVisible(true); // Volver al visor
+            setIsViewerVisible(true);
           }}
           onSave={handleSaveFlashcard}
         />
