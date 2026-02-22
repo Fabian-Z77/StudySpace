@@ -1,26 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, Modal, TouchableOpacity, Touchable, Text, Platform } from 'react-native';
-import FolderFlashcardSystem from './FolderFlashcardSystem';
-import FlashcardViewer from './FlashcardViewer';
+import { auth } from '@/firebase';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { Alert, Platform, StyleSheet, View } from 'react-native';
+import { useAuth } from '../AuthContext';
+import WebNavigation from '../WebNavigation';
 import FlashcardEditModal from './FlashcardEditModal'; // Vamos a crear este componente después
+import FlashcardViewer from './FlashcardViewer';
+import FolderFlashcardSystem from './FolderFlashcardSystem';
 import {
   getUserItems,
-  createFolder,
-  createFlashcard,
-  updateFolder,
-  updateFlashcard,
-  deleteFolder,
-  deleteFlashcard,
-  moveItem
+  updateFlashcard
 } from './getUserItems';
-import { TextInput } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '@react-navigation/elements';
-import { useAuth } from '../AuthContext';
-import { auth } from '@/firebase';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import WebNavigation from '../WebNavigation';
 
 
 const COLORS = {

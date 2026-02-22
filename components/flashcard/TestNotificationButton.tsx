@@ -1,19 +1,23 @@
 import React, { useCallback } from 'react';
 import { TouchableOpacity, Text, Alert } from 'react-native';
-import notifee, { AndroidImportance } from '@notifee/react-native';
+// NOTIFEE DESACTIVADO:
+// import notifee, { AndroidImportance } from '@notifee/react-native';
 
 function TestNotificationButton() {
   // Asegurarnos de tener canal (Android)
   React.useEffect(() => {
+    /* NOTIFEE DESACTIVADO
     notifee.createChannel({
       id: 'test',
       name: 'Canal de Prueba',
       importance: AndroidImportance.HIGH,
     });
+    */
   }, []);
 
   const sendTestNotification = useCallback(async () => {
     try {
+      /* NOTIFEE DESACTIVADO
       // 1) Pedir permiso (iOS / Android 13+)
       const settings = await notifee.requestPermission();
       if (settings.authorizationStatus < 1) {
@@ -30,6 +34,9 @@ function TestNotificationButton() {
           pressAction: { id: 'default' },
         },
       });
+      */
+      console.log('🔔 Simulando notificación de prueba enviada (Notifee desactivado)');
+      Alert.alert('Simulación', 'La notificación de prueba fue simulada por consola.');
     } catch (error) {
       console.error('Error enviando notificación de prueba:', error);
       Alert.alert('Error', 'Algo salió mal al enviar la notificación');

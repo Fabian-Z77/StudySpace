@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Button } from 'react-native';
-import notifee, { TimestampTrigger, TriggerType } from '@notifee/react-native';
+// NOTIFEE DESACTIVADO:
+// import notifee, { TimestampTrigger, TriggerType } from '@notifee/react-native';
 
 function pruebaTrigger() {
   async function onCreateTriggerNotification() {
@@ -10,11 +11,10 @@ function pruebaTrigger() {
     // Mostrar la hora legible en consola
     console.log('🔔 La notificación se mostrará a las:', date.toLocaleTimeString());
 
+    /* NOTIFEE DESACTIVADO
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
       timestamp: date.getTime(),
-      
-      
     };
 
     await notifee.createTriggerNotification(
@@ -27,6 +27,8 @@ function pruebaTrigger() {
       },
       trigger,
     );
+    */
+    console.log("SIMULACIÓN: Trigger de notificación activado (Notifee desactivado)");
   }
 
   return (
@@ -36,4 +38,5 @@ function pruebaTrigger() {
   );
 }
 
+// Nota: Aproveché de agregar el export default que solucionará el "WARN" de Expo Router.
 export default pruebaTrigger;

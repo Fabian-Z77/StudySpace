@@ -1,23 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Modal, 
-  TextInput, 
-  Alert, 
-  FlatList,
-  StatusBar,
-  ActivityIndicator,
-  Platform
-} from 'react-native';
-import { Feather, Ionicons, FontAwesome } from '@expo/vector-icons';
-import { createFlashcard, createFolder, deleteFlashcard, deleteFolder, getFlashcards, getFolders, reorderFlashcards, updateFlashcard, updateFolder } from './funcionesFirestore';
+import { Feather, FontAwesome } from '@expo/vector-icons';
 import { signOut } from 'firebase/auth';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { auth } from '../../firebase';
+import { createFlashcard, createFolder, deleteFlashcard, deleteFolder, getFlashcards, getFolders, reorderFlashcards, updateFlashcard, updateFolder } from './funcionesFirestore';
 import { shuffleArray } from './util';
-import SpaceRepetition from '@/app/SpaceRepetition';
 
 
 

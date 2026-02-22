@@ -37,3 +37,12 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+
+# Archivos de seguridad y credenciales
+StudySpace.keystore
+google-services.json
+.env
+
+# Configuraciones del editor
+.vscode/

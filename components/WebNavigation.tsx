@@ -1,32 +1,16 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React from 'react';
 
-import {
-  Dimensions,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StatusBar,
-  ActivityIndicator,
-  RefreshControl,
-  Alert,
-  Platform
-} from 'react-native';
-import Card from '@/components/card';
-import { DiferenciaEnDias } from '../components/funciones/calculo_fecha';
-import { DiaEnLetra } from '../components/funciones/calculo_dia_en_letra';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { getTasks } from '@/components/funcionesTask/GetTask';
-import { auth, signOut } from '../firebase';
-import { deleteOldTasks } from '@/components/funcionesTask/deleteOldTasks-';
-import notifee, { AndroidImportance } from '@notifee/react-native';
-import { DiferenciaEnMinutos } from '@/components/funcionesTask/DiferenciaEnMinutos';
 import 'intl';
 import 'intl/locale-data/jsonp/en'; // o 'es' para español
-import { ScrollView } from 'react-native-gesture-handler';
-import { Link, useLocation } from 'react-router-dom';
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
 
 
@@ -98,6 +82,21 @@ const navigation = useNavigation();
           </Text>
         </View>
       </TouchableOpacity>
+
+      {/* Flashcard Caja */}
+      <TouchableOpacity
+        style={styles.webNavButton}
+        onPress={() => navigation.navigate('flashcardCaja')}
+      >
+        <View style={styles.webNavButtonContent}>
+          <View style={styles.webNavIconContainer}>
+            <Ionicons name='layers' size={20} color={COLORS.primary} />
+          </View>
+          <Text style={styles.webNavButtonText}>
+            Flashcard Caja
+          </Text>
+        </View>
+      </TouchableOpacity>
     </View>
   
   
@@ -111,57 +110,71 @@ const navigation = useNavigation();
 
 
 const styles = StyleSheet.create({
-      // Estilos de WebNavigation actualizados
-      webNavContainer: {
-        flexDirection: 'row',
-        backgroundColor: COLORS.white,
-        borderRadius: 12,
-        padding: 8,
-        marginTop: 20,
-        marginHorizontal: 20,
-        gap: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 3,
-        borderWidth: 1,
-        borderColor: COLORS.border,
-      },
-      webNavButton: {
-        flex: 1,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-        backgroundColor: 'transparent',
-        alignItems: 'center',
-        justifyContent: 'center',
-        ...(Platform.OS === 'web' && {
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-        }),
-      },
-      webNavButtonContent: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-      },
-      webNavIconContainer: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: COLORS.primary + '15',
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-      webNavButtonText: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: COLORS.text,
-        textAlign: 'center',
-        lineHeight: 16,
-      },
-    
-})
+  webNavContainer: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 10,
+    marginTop: 24,
+    marginBottom: 16,
+    alignSelf: 'center',
+    maxWidth: 700,
+    width: '96%',
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.10,
+    shadowRadius: 12,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(Platform.OS === 'web' && {
+      marginLeft: 'auto',
+      marginRight: 'auto',
+    }),
+  },
+  webNavButton: {
+    flex: 1,
+    minWidth: 100,
+    maxWidth: 140,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+    backgroundColor: '#f5f7ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transitionProperty: 'box-shadow, transform',
+    transitionDuration: '0.2s',
+    transitionTimingFunction: 'ease',
+    ...(Platform.OS === 'web' && {
+      cursor: 'pointer',
+    }),
+  },
+  webNavButtonContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  webNavIconContainer: {
+    width: 32,  
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary + '18',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+    boxShadow: '0 1px 6px 0 #4C6FFF22',
+  },
+  webNavButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.text,
+    textAlign: 'center',
+    lineHeight: 16,
+    letterSpacing: 0.2,
+  },
+});
 
 export default WebNavigation;

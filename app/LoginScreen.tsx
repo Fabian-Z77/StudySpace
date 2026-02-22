@@ -1,13 +1,15 @@
 // LoginScreen.js
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { auth } from '../firebase';
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigation = useNavigation();
 
   const handleLogin = async () => {
     if (email === '' || password === '') {
@@ -17,9 +19,12 @@ const LoginScreen = ({ navigation }) => {
 
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('Inicio de sesión exitoso:', userCredential.user.uid);
       
-    } catch (error) {
+      // La navegación se manejará automáticamente a través del AuthContext
+      
+    } catch (error: any) {
       let errorMessage = 'Error al iniciar sesión';
       
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
@@ -33,7 +38,7 @@ const LoginScreen = ({ navigation }) => {
       }
       
       Alert.alert('Error', errorMessage);
-      console.error('Error de inicio de sesión:', error);
+      console.error('Error de inicio de sesión:', error.code, error.message);
     } finally {
       setLoading(false);
     }
@@ -51,7 +56,6 @@ const LoginScreen = ({ navigation }) => {
         value={email}
         onChangeText={setEmail}
         placeholderTextColor={'black'}
-
       />
       
       <TextInput
@@ -61,7 +65,6 @@ const LoginScreen = ({ navigation }) => {
         value={password}
         onChangeText={setPassword}
         placeholderTextColor={'black'}
-
       />
       
       <TouchableOpacity 

@@ -1,8 +1,8 @@
 // AuthContext.js
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { onAuthStateChanged } from 'firebase/auth';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { auth } from '../firebase';
 import { saveUser } from './flashcard/funcionesFirestore';
 
 const AuthContext = createContext();
@@ -10,7 +10,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentUsuario, setCurrentUsuario] = useState([])
+  const [currentUsuario, setCurrentUsuario] = useState(null);
 
   useEffect(() => {
     // Escucha los cambios en el estado de autenticación
@@ -21,13 +21,13 @@ export const AuthProvider = ({ children }) => {
         setCurrentUsuario(auth.currentUser);
         try {
           await AsyncStorage.setItem('user', JSON.stringify(userState));
-
         } catch (e) {
           console.error('Error al guardar usuario en AsyncStorage:', e);
         }
       } else {
         // Usuario no autenticado
         setUser(null);
+        setCurrentUsuario(null);
         try {
           await AsyncStorage.removeItem('user');
         } catch (e) {
@@ -41,12 +41,12 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-
   useEffect(() => {
-    console.log("datos del usuario: ", currentUsuario.uid)
-    saveUser(currentUsuario.uid,currentUsuario.email,currentUsuario.email)
-    console.log("Usuario agregado...")
-  },[user,currentUsuario])
+    if (currentUsuario?.uid) {
+      saveUser(currentUsuario.uid, currentUsuario.email, currentUsuario.email)
+        .catch(error => console.error('Error al guardar usuario en Firestore:', error));
+    }
+  }, [user, currentUsuario]);
 
   return (
     <AuthContext.Provider

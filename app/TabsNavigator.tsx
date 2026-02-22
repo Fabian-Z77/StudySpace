@@ -8,6 +8,7 @@ import SpaceRepetition from './SpaceRepetition';
 import TodasLasTareas from '@/components/TodasLasTareas';
 import FlashcardApp from '@/components/flashcard/FlashcardApp';
 import ProgrammingErrorSolver from '@/components/ProgrammingErrorSolver';
+import MenuRepetition from '@/components/cajas/menuRepetition';
 
 const Tab = createBottomTabNavigator();
 
@@ -18,8 +19,8 @@ export default function TabsNavigator() {
         tabBarIcon: ({ color, size }) => {
           let iconName;
 
-          if (route.name === 'Space') {
-            iconName = 'home';
+          if (route.name === 'Menu') {
+            iconName = 'menu';
           } else if (route.name === 'flashcardApp') {
             iconName = 'book';
           } else if (route.name === 'ProgrammingError') {
@@ -31,7 +32,7 @@ export default function TabsNavigator() {
         headerShown: false
       })}
     >
-      <Tab.Screen name="Space" component={SpaceRepetition} />
+      <Tab.Screen name="Menu" component={MenuRepetition} />
       <Tab.Screen name="flashcardApp" component={FlashcardApp} />
       <Tab.Screen name="ProgrammingError" component={ProgrammingErrorSolver} />
     </Tab.Navigator>

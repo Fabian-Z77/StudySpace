@@ -29,17 +29,17 @@ import {
 // Tu configuración de Firebase (reemplaza con tus propios valores)
 const firebaseConfig = {
 
-  apiKey: "AIzaSyB2djAEuTutepcY1INV834aBgTfmhVz_Gw",
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
 
-  authDomain: "studyspace-4c521.firebaseapp.com",
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
 
-  projectId: "studyspace-4c521",
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
 
-  storageBucket: "studyspace-4c521.firebasestorage.app",
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
 
-  messagingSenderId: "789246904191",
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
 
-  appId: "1:789246904191:web:4c81154773426cbfc3fc4a"
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID
 
 };
 
